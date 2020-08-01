@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ProjectBehance</string>
+    <string name="content_description">Image</string>
 </resources>
