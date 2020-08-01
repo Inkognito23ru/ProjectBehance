@@ -1,5 +1,6 @@
 package ru.osipov.projectbehance.data.database;
 
+import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -11,6 +12,7 @@ import ru.osipov.projectbehance.data.model.project.Project;
 import ru.osipov.projectbehance.data.model.user.Image;
 import ru.osipov.projectbehance.data.model.user.User;
 
+@Dao
 public interface BehanceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertProjects(List<Project> projects);
