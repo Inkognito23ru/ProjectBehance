@@ -9,6 +9,9 @@ public class ProfileActivity extends SingleFragmentActivity {
 
     @Override
     protected Fragment getFragment() {
-        return null;
+        if (getIntent() != null) {
+            return ProfileFragment.newInstance(getIntent().getBundleExtra(USERNAME_KEY));
+        }
+        throw new IllegalStateException("getIntent cannot be null");
     }
 }
