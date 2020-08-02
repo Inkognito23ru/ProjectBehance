@@ -7,39 +7,33 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
-import com.squareup.picasso.Picasso;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import ru.osipov.projectbehance.R;
+import ru.osipov.projectbehance.common.PresenterFragment;
 import ru.osipov.projectbehance.common.RefreshOwner;
 import ru.osipov.projectbehance.common.Refreshable;
 import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.data.model.user.User;
-import ru.osipov.projectbehance.utils.ApiUtils;
 import ru.osipov.projectbehance.utils.DateUtils;
 
-public class ProfileFragment extends Fragment implements Refreshable {
+public class ProfileFragment extends PresenterFragment<ProfilePresenter> implements ProfileView, Refreshable {
 
     public static final String PROFILE_KEY = "PROFILE_KEY";
 
     private RefreshOwner mRefreshOwner;
     private View mErrorView;
-    private View mProfileView;
+    private View mContent;
     private String mUsername;
     private Storage mStorage;
-    private Disposable mDisposable;
 
     private ImageView mProfileImage;
     private TextView mProfileName;
     private TextView mProfileCreatedOn;
     private TextView mProfileLocation;
+    private ProfilePresenter mProfilePresenter;
 
     public static ProfileFragment newInstance(Bundle args) {
         ProfileFragment fragment = new ProfileFragment();
@@ -65,7 +59,7 @@ public class ProfileFragment extends Fragment implements Refreshable {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mErrorView = view.findViewById(R.id.errorView);
-        mProfileView = view.findViewById(R.id.view_profile);
+        mContent = view.findViewById(R.id.view_profile);
 
         mProfileImage = view.findViewById(R.id.iv_profile);
         mProfileName = view.findViewById(R.id.tv_display_name_details);
@@ -84,57 +78,54 @@ public class ProfileFragment extends Fragment implements Refreshable {
         if (getActivity() != null) {
             getActivity().setTitle(mUsername);
         }
+        mProfilePresenter = new ProfilePresenter(this, mStorage);
 
-        mProfileView.setVisibility(View.VISIBLE);
+        mContent.setVisibility(View.VISIBLE);
 
         onRefreshData();
     }
 
     @Override
     public void onRefreshData() {
-        getProfile();
+        mProfilePresenter.getProfile(mUsername, mProfileImage);
     }
 
-    private void getProfile() {
-        mDisposable = ApiUtils.getApiService().getUserInfo(mUsername)
-                .subscribeOn(Schedulers.io())
-                .doOnSuccess(response -> mStorage.insertUser(response))
-                .onErrorReturn(throwable ->
-                        ApiUtils.NETWORK_EXCEPTIONS.contains(throwable.getClass()) ?
-                                mStorage.getUser(mUsername) :
-                                null)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> mRefreshOwner.setRefreshState(true))
-                .doFinally(() -> mRefreshOwner.setRefreshState(false))
-                .subscribe(
-                        response -> {
-                            mErrorView.setVisibility(View.GONE);
-                            mProfileView.setVisibility(View.VISIBLE);
-                            bind(response.getUser());
-                        },
-                        throwable -> {
-                            mErrorView.setVisibility(View.VISIBLE);
-                            mProfileView.setVisibility(View.GONE);
-                        });
+    @Override
+    protected ProfilePresenter getPresenter() {
+        return mProfilePresenter;
     }
 
-    private void bind(User user) {
-        Picasso.get()
-                .load(user.getImage().getPhotoUrl())
-                .fit()
-                .into(mProfileImage);
+    @Override
+    public void showProfile(User user) {
+        mErrorView.setVisibility(View.GONE);
+        mContent.setVisibility(View.VISIBLE);
+
         mProfileName.setText(user.getDisplayName());
         mProfileCreatedOn.setText(DateUtils.format(user.getCreatedOn()));
         mProfileLocation.setText(user.getLocation());
     }
 
     @Override
+    public void showLoading() {
+        mRefreshOwner.setRefreshState(true);
+    }
+
+    @Override
+    public void hideLoading() {
+        mRefreshOwner.setRefreshState(false);
+    }
+
+    @Override
+    public void showError() {
+        mErrorView.setVisibility(View.VISIBLE);
+        mContent.setVisibility(View.GONE);
+    }
+
+
+    @Override
     public void onDetach() {
         mStorage = null;
         mRefreshOwner = null;
-        if (mDisposable != null) {
-            mDisposable.dispose();
-        }
         super.onDetach();
     }
 }
