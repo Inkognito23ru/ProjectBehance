@@ -1,6 +1,11 @@
 package ru.osipov.projectbehance.common;
 
-public interface BaseView {
+import moxy.MvpView;
+import moxy.viewstate.strategy.SkipStrategy;
+import moxy.viewstate.strategy.StateStrategyType;
+
+@StateStrategyType(SkipStrategy.class)
+public interface BaseView extends MvpView {
 
     void showLoading();
 

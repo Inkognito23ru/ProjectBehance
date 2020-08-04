@@ -1,10 +1,10 @@
 package ru.osipov.projectbehance.common;
 
-import androidx.fragment.app.Fragment;
+import moxy.MvpAppCompatFragment;
 
-public abstract class PresenterFragment<P extends BasePresenter> extends Fragment {
+public abstract class PresenterFragment extends MvpAppCompatFragment {
 
-    protected abstract P getPresenter();
+    protected abstract BasePresenter getPresenter();
 
     @Override
     public void onDetach() {

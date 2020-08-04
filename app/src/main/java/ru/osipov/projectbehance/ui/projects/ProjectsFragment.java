@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import moxy.presenter.InjectPresenter;
+import moxy.presenter.ProvidePresenter;
 import ru.osipov.projectbehance.R;
 import ru.osipov.projectbehance.common.PresenterFragment;
 import ru.osipov.projectbehance.common.RefreshOwner;
@@ -20,7 +22,7 @@ import ru.osipov.projectbehance.data.model.project.Project;
 import ru.osipov.projectbehance.ui.profile.ProfileActivity;
 import ru.osipov.projectbehance.ui.profile.ProfileFragment;
 
-public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
+public class ProjectsFragment extends PresenterFragment
         implements ProjectsView, Refreshable, ProjectsAdapter.OnItemClickListener {
 
     private RecyclerView mRecyclerView;
@@ -28,8 +30,19 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
     private View mErrorView;
     private Storage mStorage;
     private ProjectsAdapter mProjectsAdapter;
-    private ProjectsPresenter mProjectsPresenter;
+    @InjectPresenter
+    ProjectsPresenter mProjectsPresenter;
 
+    @ProvidePresenter
+    ProjectsPresenter providePresenter(){
+        return new ProjectsPresenter(mStorage);
+    }
+
+
+    @Override
+    protected ProjectsPresenter getPresenter() {
+        return mProjectsPresenter;
+    }
 
     public static ProjectsFragment newInstance() {
         return new ProjectsFragment();
@@ -67,8 +80,6 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
             getActivity().setTitle(R.string.projects);
         }
 
-        mProjectsPresenter =new ProjectsPresenter(this, mStorage);
-
         mProjectsAdapter = new ProjectsAdapter(this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(mProjectsAdapter);
@@ -93,10 +104,6 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
         mProjectsPresenter.getProjects();
     }
 
-    @Override
-    protected ProjectsPresenter getPresenter() {
-        return mProjectsPresenter;
-    }
 
     @Override
     public void showProjects(List<Project> projects) {

@@ -1,21 +1,19 @@
 package ru.osipov.projectbehance.ui.projects;
 
-import android.view.View;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import moxy.InjectViewState;
 import ru.osipov.projectbehance.BuildConfig;
 import ru.osipov.projectbehance.common.BasePresenter;
 import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.utils.ApiUtils;
 
-public class ProjectsPresenter extends BasePresenter {
+@InjectViewState
+public class ProjectsPresenter extends BasePresenter<ProjectsView> {
 
-    private ProjectsView mProjectsView;
     private Storage mStorage;
 
-    public ProjectsPresenter(ProjectsView projectsView, Storage storage) {
-        mProjectsView = projectsView;
+    public ProjectsPresenter(Storage storage) {
         mStorage = storage;
     }
 
@@ -27,15 +25,15 @@ public class ProjectsPresenter extends BasePresenter {
                         ApiUtils.NETWORK_EXCEPTIONS.contains(throwable.getClass()) ? mStorage.getProjects() : null)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> mProjectsView.showLoading())
-                .doFinally(() -> mProjectsView.hideLoading())
+                .doOnSubscribe(disposable -> getViewState().showLoading())
+                .doFinally(() -> getViewState().hideLoading())
                 .subscribe(
-                        response -> mProjectsView.showProjects(response.getProjects()),
-                        throwable -> mProjectsView.showError()));
+                        response -> getViewState().showProjects(response.getProjects()),
+                        throwable -> getViewState().showError()));
     }
 
     public void openProfileFragment(String userName){
-        mProjectsView.openProfileFragment(userName);
+        getViewState().openProfileFragment(userName);
     }
 
 }

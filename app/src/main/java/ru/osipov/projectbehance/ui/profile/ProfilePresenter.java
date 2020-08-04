@@ -1,23 +1,20 @@
 package ru.osipov.projectbehance.ui.profile;
 
-import android.view.View;
 import android.widget.ImageView;
-
 import com.squareup.picasso.Picasso;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import moxy.InjectViewState;
 import ru.osipov.projectbehance.common.BasePresenter;
 import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.utils.ApiUtils;
 
-public class ProfilePresenter extends BasePresenter {
+@InjectViewState
+public class ProfilePresenter extends BasePresenter<ProfileView> {
 
-    private ProfileView mProfileView;
     private Storage mStorage;
 
-    public ProfilePresenter(ProfileView profileView, Storage storage) {
-        mProfileView = profileView;
+    public ProfilePresenter(Storage storage) {
         mStorage = storage;
     }
 
@@ -30,18 +27,18 @@ public class ProfilePresenter extends BasePresenter {
                                 mStorage.getUser(userName) :
                                 null)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> mProfileView.showLoading())
-                .doFinally(() -> mProfileView.hideLoading())
+                .doOnSubscribe(disposable -> getViewState().showLoading())
+                .doFinally(() -> getViewState().hideLoading())
                 .subscribe(
                         response -> {
                             Picasso.get()
                                     .load(response.getUser().getImage().getPhotoUrl())
                                     .fit()
                                     .into(mProfileImage);
-                            mProfileView.showProfile(response.getUser());
+                            getViewState().showProfile(response.getUser());
                         },
                         throwable -> {
-                            mProfileView.showError();
+                            getViewState().showError();
                         }));
     }
 }

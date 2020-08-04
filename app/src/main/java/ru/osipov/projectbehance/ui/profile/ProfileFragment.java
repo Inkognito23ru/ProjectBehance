@@ -9,8 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-
+import moxy.presenter.InjectPresenter;
+import moxy.presenter.ProvidePresenter;
 import ru.osipov.projectbehance.R;
 import ru.osipov.projectbehance.common.PresenterFragment;
 import ru.osipov.projectbehance.common.RefreshOwner;
@@ -19,7 +19,7 @@ import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.data.model.user.User;
 import ru.osipov.projectbehance.utils.DateUtils;
 
-public class ProfileFragment extends PresenterFragment<ProfilePresenter> implements ProfileView, Refreshable {
+public class ProfileFragment extends PresenterFragment implements ProfileView, Refreshable {
 
     public static final String PROFILE_KEY = "PROFILE_KEY";
 
@@ -33,7 +33,18 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
     private TextView mProfileName;
     private TextView mProfileCreatedOn;
     private TextView mProfileLocation;
-    private ProfilePresenter mProfilePresenter;
+    @InjectPresenter
+    ProfilePresenter mProfilePresenter;
+
+    @ProvidePresenter
+    ProfilePresenter providePresenter(){
+        return new ProfilePresenter(mStorage);
+    }
+
+@Override
+    protected ProfilePresenter getPresenter() {
+        return mProfilePresenter;
+    }
 
     public static ProfileFragment newInstance(Bundle args) {
         ProfileFragment fragment = new ProfileFragment();
@@ -78,7 +89,6 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         if (getActivity() != null) {
             getActivity().setTitle(mUsername);
         }
-        mProfilePresenter = new ProfilePresenter(this, mStorage);
 
         mContent.setVisibility(View.VISIBLE);
 
@@ -90,10 +100,6 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         mProfilePresenter.getProfile(mUsername, mProfileImage);
     }
 
-    @Override
-    protected ProfilePresenter getPresenter() {
-        return mProfilePresenter;
-    }
 
     @Override
     public void showProfile(User user) {
