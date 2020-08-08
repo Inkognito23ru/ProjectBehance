@@ -1,17 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data class="ProjectsBinding">
+
+        <import type="android.view.View" alias="V"/>
+        
+       <variable
+           name="vm"
+           type="ru.osipov.projectbehance.ui.projects.ProjectsViewModel" />
+    </data>
+
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:id="@+id/refresher"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    bind:onRefresh="@{vm.onRefreshListener}"
+    bind:refreshState="@{vm.isLoading}">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible" />
+        android:layout_height="match_parent">
 
-    <include
-        layout="@layout/v_error"
-        android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/li_projects"
+            bind:data="@{vm.projects}"
+            bind:clickHandler="@{vm.onItemClickListener}"
+            android:visibility="@{vm.isErrorVisible ? V.GONE : V.VISIBLE }"/>
 
-</LinearLayout>
+        <include
+            layout="@layout/v_error"
+            android:visibility="@{vm.isErrorVisible? V.VISIBLE : V.GONE}" />
+
+    </LinearLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</layout>

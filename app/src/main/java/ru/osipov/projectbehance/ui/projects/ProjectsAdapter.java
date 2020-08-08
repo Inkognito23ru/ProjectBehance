@@ -5,19 +5,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
 import java.util.List;
 import ru.osipov.projectbehance.R;
-
 import ru.osipov.projectbehance.data.model.project.Project;
+import ru.osipov.projectbehance.databinding.ProjectBinding;
 
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsHolder> {
 
     @NonNull
-    private final List<Project> mProjects = new ArrayList<>();
+    private final List<Project> mProjects;
     private final OnItemClickListener mOnItemClickListener;
 
-    public ProjectsAdapter(OnItemClickListener onItemClickListener) {
+    public ProjectsAdapter(List<Project> projects, OnItemClickListener onItemClickListener) {
+        mProjects = projects;
         mOnItemClickListener = onItemClickListener;
     }
 
@@ -26,7 +26,8 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsHolder> {
     public ProjectsHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.li_projects, parent, false);
-        return new ProjectsHolder(view);
+        ProjectBinding binding = ProjectBinding.inflate(inflater, parent, false);
+        return new ProjectsHolder(binding);
     }
 
     @Override
@@ -40,17 +41,7 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsHolder> {
         return mProjects.size();
     }
 
-    public void addData(List<Project> data, boolean isRefreshed) {
-        if (isRefreshed) {
-            mProjects.clear();
-        }
-
-        mProjects.addAll(data);
-        notifyDataSetChanged();
-    }
-
     public interface OnItemClickListener {
-
         void onItemClick(String username);
     }
 }

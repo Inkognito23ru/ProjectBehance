@@ -9,28 +9,25 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import ru.osipov.projectbehance.BuildConfig;
 import ru.osipov.projectbehance.R;
-import ru.osipov.projectbehance.common.RefreshOwner;
-import ru.osipov.projectbehance.common.Refreshable;
 import ru.osipov.projectbehance.data.Storage;
+import ru.osipov.projectbehance.databinding.ProjectsBinding;
 import ru.osipov.projectbehance.ui.profile.ProfileActivity;
 import ru.osipov.projectbehance.ui.profile.ProfileFragment;
-import ru.osipov.projectbehance.utils.ApiUtils;
 
-public class ProjectsFragment extends Fragment implements Refreshable, ProjectsAdapter.OnItemClickListener {
+public class ProjectsFragment extends Fragment {
 
-    private RecyclerView mRecyclerView;
-    private RefreshOwner mRefreshOwner;
-    private View mErrorView;
-    private Storage mStorage;
-    private ProjectsAdapter mProjectsAdapter;
-    private Disposable mDisposable;
+    private ProjectsViewModel mProjectsViewModel;
+    private ProjectsAdapter.OnItemClickListener mOnItemClickListener = new ProjectsAdapter.OnItemClickListener() {
+        @Override
+        public void onItemClick(String username) {
+            Intent intent = new Intent(getActivity(), ProfileActivity.class);
+            Bundle args = new Bundle();
+            args.putString(ProfileFragment.PROFILE_KEY, username);
+            intent.putExtra(ProfileActivity.USERNAME_KEY, args);
+            startActivity(intent);
+        }
+    };
 
     public static ProjectsFragment newInstance() {
         return new ProjectsFragment();
@@ -40,24 +37,17 @@ public class ProjectsFragment extends Fragment implements Refreshable, ProjectsA
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof Storage.StorageOwner) {
-            mStorage = ((Storage.StorageOwner) context).obtainStorage();
-        }
-
-        if (context instanceof RefreshOwner) {
-            mRefreshOwner = ((RefreshOwner) context);
+            Storage storage = ((Storage.StorageOwner) context).obtainStorage();
+            mProjectsViewModel = new ProjectsViewModel(storage, mOnItemClickListener);
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fr_projects, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mRecyclerView = view.findViewById(R.id.recycler);
-        mErrorView = view.findViewById(R.id.errorView);
+        ProjectsBinding binding = ProjectsBinding.inflate(inflater, container, false);
+        binding.setVm(mProjectsViewModel);
+        return binding.getRoot();
     }
 
     @Override
@@ -68,56 +58,12 @@ public class ProjectsFragment extends Fragment implements Refreshable, ProjectsA
             getActivity().setTitle(R.string.projects);
         }
 
-        mProjectsAdapter = new ProjectsAdapter(this);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mRecyclerView.setAdapter(mProjectsAdapter);
-
-        onRefreshData();
-    }
-
-    @Override
-    public void onItemClick(String username) {
-        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-        Bundle args = new Bundle();
-        args.putString(ProfileFragment.PROFILE_KEY, username);
-        intent.putExtra(ProfileActivity.USERNAME_KEY, args);
-        startActivity(intent);
+        mProjectsViewModel.loadProjects();
     }
 
     @Override
     public void onDetach() {
-        mStorage = null;
-        mRefreshOwner = null;
-        if (mDisposable != null) {
-            mDisposable.dispose();
-        }
+        mProjectsViewModel.dispathDetach();
         super.onDetach();
     }
-
-    @Override
-    public void onRefreshData() {
-        getProjects();
-    }
-
-    private void getProjects() {
-        mDisposable = ApiUtils.getApiService().getProjects(BuildConfig.API_QUERY)
-                .doOnSuccess(response -> mStorage.insertProjects(response))
-                .onErrorReturn(throwable ->
-                        ApiUtils.NETWORK_EXCEPTIONS.contains(throwable.getClass()) ? mStorage.getProjects() : null)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> mRefreshOwner.setRefreshState(true))
-                .doFinally(() -> mRefreshOwner.setRefreshState(false))
-                .subscribe(
-                        response -> {
-                            mErrorView.setVisibility(View.GONE);
-                            mRecyclerView.setVisibility(View.VISIBLE);
-                            mProjectsAdapter.addData(response.getProjects(), true);
-                        },
-                        throwable -> {
-                            mErrorView.setVisibility(View.VISIBLE);
-                            mRecyclerView.setVisibility(View.GONE);
-                        });
-    }
-
 }
