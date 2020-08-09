@@ -3,10 +3,10 @@ package ru.osipov.projectbehance.ui.profile;
 import androidx.fragment.app.Fragment;
 
 import ru.osipov.projectbehance.AppDelegate;
-import ru.osipov.projectbehance.common.RefreshActivity;
+import ru.osipov.projectbehance.common.SingleFragmentActivity;
 import ru.osipov.projectbehance.data.Storage;
 
-public class ProfileActivity extends RefreshActivity implements Storage.StorageOwner {
+public class ProfileActivity extends SingleFragmentActivity implements Storage.StorageOwner {
 
     public static final String USERNAME_KEY = "USERNAME_KEY";
 
