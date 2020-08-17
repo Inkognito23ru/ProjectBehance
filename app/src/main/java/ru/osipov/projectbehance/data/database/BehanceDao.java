@@ -1,5 +1,7 @@
 package ru.osipov.projectbehance.data.database;
 
+import androidx.lifecycle.LiveData;
+import androidx.paging.DataSource;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -9,6 +11,7 @@ import java.util.List;
 import ru.osipov.projectbehance.data.model.project.Cover;
 import ru.osipov.projectbehance.data.model.project.Owner;
 import ru.osipov.projectbehance.data.model.project.Project;
+import ru.osipov.projectbehance.data.model.project.RichProject;
 import ru.osipov.projectbehance.data.model.user.Image;
 import ru.osipov.projectbehance.data.model.user.User;
 
@@ -32,8 +35,11 @@ public interface BehanceDao {
     @Query("select * from project")
     List<Project> getProjects();
 
-    @Query("select * from cover where project_id = :projectId")
-    Cover getCoverFromProject(int projectId);
+    @Query("select * from project order by published_on")
+    LiveData<List<RichProject>> getProjectsLive();
+
+    @Query("select * from project order by published_on")
+    DataSource.Factory<Integer, RichProject> getProjectsPaged();
 
     @Query("select * from owner where project_id = :projectId")
     List<Owner> getOwnersFromProject(int projectId);

@@ -1,6 +1,7 @@
 package ru.osipov.projectbehance.ui.projects;
 
 import ru.osipov.projectbehance.data.model.project.Project;
+import ru.osipov.projectbehance.data.model.project.RichProject;
 import ru.osipov.projectbehance.utils.DateUtils;
 
 public class ProjectListItemViewModel {
@@ -12,11 +13,13 @@ public class ProjectListItemViewModel {
     private String mUserName;
     private String mPublisheOn;
 
-    public ProjectListItemViewModel(Project project){
-        mImageUrl = project.getCover().getPhotoUrl();
-        mName = project.getName();
-        mUserName = project.getOwners().get(FIRST_OWNER_INDEX).getUsername();
-        mPublisheOn = DateUtils.format(project.getPublishedOn());
+    public ProjectListItemViewModel(RichProject item){
+        mImageUrl = item.mProject.getCover().getPhotoUrl();
+        mName = item.mProject.getName();
+        if (item.mOwners != null && item.mOwners.size() != 0){
+            mUserName = item.mOwners.get(FIRST_OWNER_INDEX).getUsername();
+            mPublisheOn = DateUtils.format(item.mProject.getPublishedOn());
+        }
     }
 
     public String getImageUrl() {

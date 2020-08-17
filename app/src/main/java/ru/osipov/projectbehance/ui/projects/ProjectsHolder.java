@@ -2,6 +2,7 @@ package ru.osipov.projectbehance.ui.projects;
 
 import androidx.recyclerview.widget.RecyclerView;
 import ru.osipov.projectbehance.data.model.project.Project;
+import ru.osipov.projectbehance.data.model.project.RichProject;
 import ru.osipov.projectbehance.databinding.ProjectBinding;
 
 public class ProjectsHolder extends RecyclerView.ViewHolder {
@@ -16,7 +17,7 @@ public class ProjectsHolder extends RecyclerView.ViewHolder {
         mProjectBinding = binding;
     }
 
-    public void bind(Project item, ProjectsAdapter.OnItemClickListener onItemClickListener) {
+    public void bind(RichProject item, ProjectsAdapter.OnItemClickListener onItemClickListener) {
 
         mProjectBinding.setProject(new ProjectListItemViewModel(item));
         mProjectBinding.setOnItemClickListener(onItemClickListener);

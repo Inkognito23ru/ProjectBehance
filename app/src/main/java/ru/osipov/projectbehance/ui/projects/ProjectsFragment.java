@@ -9,11 +9,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+
 import ru.osipov.projectbehance.R;
 import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.databinding.ProjectsBinding;
 import ru.osipov.projectbehance.ui.profile.ProfileActivity;
 import ru.osipov.projectbehance.ui.profile.ProfileFragment;
+import ru.osipov.projectbehance.utils.CustomProjectFactory;
 
 public class ProjectsFragment extends Fragment {
 
@@ -38,7 +41,11 @@ public class ProjectsFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Storage.StorageOwner) {
             Storage storage = ((Storage.StorageOwner) context).obtainStorage();
-            mProjectsViewModel = new ProjectsViewModel(storage, mOnItemClickListener);
+            CustomProjectFactory customProjectFactory = new CustomProjectFactory(storage, mOnItemClickListener);
+
+            mProjectsViewModel = ViewModelProviders
+                    .of(this, customProjectFactory)
+                    .get(ProjectsViewModel.class);
         }
     }
 
@@ -47,6 +54,8 @@ public class ProjectsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ProjectsBinding binding = ProjectsBinding.inflate(inflater, container, false);
         binding.setVm(mProjectsViewModel);
+        binding.setLifecycleOwner(this);
+
         return binding.getRoot();
     }
 
@@ -57,13 +66,7 @@ public class ProjectsFragment extends Fragment {
         if (getActivity() != null) {
             getActivity().setTitle(R.string.projects);
         }
-
-        mProjectsViewModel.loadProjects();
     }
 
-    @Override
-    public void onDetach() {
-        mProjectsViewModel.dispathDetach();
-        super.onDetach();
-    }
+
 }

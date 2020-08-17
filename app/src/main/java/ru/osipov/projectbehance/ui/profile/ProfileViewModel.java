@@ -1,6 +1,8 @@
 package ru.osipov.projectbehance.ui.profile;
 import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableField;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -10,12 +12,12 @@ import ru.osipov.projectbehance.data.model.user.User;
 import ru.osipov.projectbehance.utils.ApiUtils;
 import ru.osipov.projectbehance.utils.DateUtils;
 
-public class ProfileViewModel {
+public class ProfileViewModel extends ViewModel {
 
     private Disposable mDisposable;
     private Storage mStorage;
 
-    private ObservableBoolean mIsLoading = new ObservableBoolean(false);
+    private MutableLiveData<Boolean> mIsLoading = new MutableLiveData<>();
 
     private String mUsername;
 
@@ -23,12 +25,12 @@ public class ProfileViewModel {
         mUsername = username;
     }
 
-    private ObservableField<String> mProfileImage = new ObservableField<>();
-    private ObservableField<String> mProfileName = new ObservableField<>();
-    private ObservableField<String> mProfileCreatedOn = new ObservableField<>();
-    private ObservableField<String> mProfileLocation = new ObservableField<>();
+    private MutableLiveData<String> mProfileImage = new MutableLiveData<>();
+    private MutableLiveData<String> mProfileName = new MutableLiveData<>();
+    private MutableLiveData<String> mProfileCreatedOn = new MutableLiveData<>();
+    private MutableLiveData<String> mProfileLocation = new MutableLiveData<>();
 
-    public ObservableBoolean mIsErrorVisible = new ObservableBoolean(false);
+    private MutableLiveData<Boolean> mIsErrorVisible = new MutableLiveData<>();
     private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
@@ -49,53 +51,55 @@ public class ProfileViewModel {
                                 mStorage.getUser(mUsername) :
                                 null)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(disposable -> mIsLoading.set(true))
-                .doFinally(() -> mIsLoading.set(false))
+                .doOnSubscribe(disposable -> mIsLoading.postValue(true))
+                .doFinally(() -> mIsLoading.postValue(false))
                 .subscribe(
                         response -> {
-                            mIsErrorVisible.set(false);
+                            mIsErrorVisible.postValue(false);
                             bind(response.getUser());
                         },
                         throwable -> {
-                            mIsErrorVisible.set(true);
+                            mIsErrorVisible.postValue(true);
                         });
     }
 
     private void bind(User user) {
-        mProfileImage.set(user.getImage().getPhotoUrl());
-        mProfileName.set(user.getDisplayName());
-        mProfileCreatedOn.set(DateUtils.format(user.getCreatedOn()));
-        mProfileLocation.set(user.getLocation());
+        mProfileImage.postValue(user.getImage().getPhotoUrl());
+        mProfileName.postValue(user.getDisplayName());
+        mProfileCreatedOn.postValue(DateUtils.format(user.getCreatedOn()));
+        mProfileLocation.postValue(user.getLocation());
     }
 
-    public void dispathDetach(){
+    @Override
+    public void onCleared(){
         mStorage = null;
         if (mDisposable != null) {
             mDisposable.dispose();
         }
     }
 
-    public ObservableBoolean getIsLoading() {
+
+    public MutableLiveData<Boolean> getIsLoading() {
         return mIsLoading;
     }
 
-    public ObservableField<String> getProfileImage() {
+    public MutableLiveData<String> getProfileImage() {
         return mProfileImage;
     }
 
-    public ObservableField<String> getProfileName() {
+    public MutableLiveData<String> getProfileName() {
         return mProfileName;
     }
 
-    public ObservableField<String> getProfileCreatedOn() {
+    public MutableLiveData<String> getProfileCreatedOn() {
         return mProfileCreatedOn;
     }
 
-    public ObservableField<String> getProfileLocation() {
+    public MutableLiveData<String> getProfileLocation() {
         return mProfileLocation;
     }
 
-    public ObservableBoolean getIsErrorVisible() {
+    public MutableLiveData<Boolean> getIsErrorVisible() {
         return mIsErrorVisible;
     }
 

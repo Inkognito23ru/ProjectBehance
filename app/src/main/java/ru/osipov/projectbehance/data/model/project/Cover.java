@@ -3,28 +3,20 @@ package ru.osipov.projectbehance.data.model.project;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
-@Entity(foreignKeys = @ForeignKey(
-        entity = Project.class,
-        parentColumns = "id",
-        childColumns = "project_id"
-))
+@Entity
 public class Cover implements Serializable {
 
     @PrimaryKey
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "cover_id")
     private int mId;
 
     @ColumnInfo(name = "photo_url")
     @SerializedName("202")
     private String mPhotoUrl;
-
-    @ColumnInfo(name = "project_id")
-    private int mProjectId;
 
     public int getId() {
         return mId;
@@ -40,13 +32,5 @@ public class Cover implements Serializable {
 
     public void setPhotoUrl(@NonNull String photoUrl) {
         mPhotoUrl = photoUrl;
-    }
-
-    public int getProjectId() {
-        return mProjectId;
-    }
-
-    public void setProjectId(int projectId) {
-        mProjectId = projectId;
     }
 }
