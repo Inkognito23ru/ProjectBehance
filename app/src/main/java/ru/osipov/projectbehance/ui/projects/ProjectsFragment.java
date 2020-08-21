@@ -11,11 +11,12 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+import javax.inject.Inject;
+import ru.osipov.projectbehance.AppDelegate;
 import ru.osipov.projectbehance.R;
 import ru.osipov.projectbehance.common.PresenterFragment;
 import ru.osipov.projectbehance.common.RefreshOwner;
 import ru.osipov.projectbehance.common.Refreshable;
-import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.data.model.project.Project;
 import ru.osipov.projectbehance.ui.profile.ProfileActivity;
 import ru.osipov.projectbehance.ui.profile.ProfileFragment;
@@ -26,10 +27,9 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
     private RecyclerView mRecyclerView;
     private RefreshOwner mRefreshOwner;
     private View mErrorView;
-    private Storage mStorage;
     private ProjectsAdapter mProjectsAdapter;
-    private ProjectsPresenter mProjectsPresenter;
-
+    @Inject
+    ProjectsPresenter mProjectsPresenter;
 
     public static ProjectsFragment newInstance() {
         return new ProjectsFragment();
@@ -38,9 +38,6 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Storage.StorageOwner) {
-            mStorage = ((Storage.StorageOwner) context).obtainStorage();
-        }
 
         if (context instanceof RefreshOwner) {
             mRefreshOwner = ((RefreshOwner) context);
@@ -67,7 +64,8 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
             getActivity().setTitle(R.string.projects);
         }
 
-        mProjectsPresenter =new ProjectsPresenter(this, mStorage);
+        AppDelegate.getAppComponent().injectProjectsFragment(this);
+        mProjectsPresenter.setView(this);
 
         mProjectsAdapter = new ProjectsAdapter(this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -83,7 +81,6 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
 
     @Override
     public void onDetach() {
-        mStorage = null;
         mRefreshOwner = null;
         super.onDetach();
     }
@@ -129,5 +126,4 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter>
         mErrorView.setVisibility(View.VISIBLE);
         mRecyclerView.setVisibility(View.GONE);
     }
-
 }

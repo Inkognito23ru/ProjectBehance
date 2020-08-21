@@ -1,19 +1,15 @@
 package ru.osipov.projectbehance.common;
 
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import ru.osipov.projectbehance.AppDelegate;
 import ru.osipov.projectbehance.R;
-import ru.osipov.projectbehance.data.Storage;
 
 public abstract class SingleFragmentActivity extends AppCompatActivity
-        implements Storage.StorageOwner, SwipeRefreshLayout.OnRefreshListener, RefreshOwner {
+        implements SwipeRefreshLayout.OnRefreshListener, RefreshOwner {
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -27,15 +23,9 @@ public abstract class SingleFragmentActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             changeFragment(getFragment());
         }
-
     }
 
     protected abstract Fragment getFragment();
-
-    @Override
-    public Storage obtainStorage() {
-        return ((AppDelegate) getApplicationContext()).getStorage();
-    }
 
     public void changeFragment(Fragment fragment) {
         boolean addToBackStack = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer) != null;
@@ -47,7 +37,6 @@ public abstract class SingleFragmentActivity extends AppCompatActivity
         if (addToBackStack) {
             transaction.addToBackStack(fragment.getClass().getSimpleName());
         }
-
         transaction.commit();
     }
 

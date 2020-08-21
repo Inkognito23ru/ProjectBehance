@@ -1,26 +1,26 @@
 package ru.osipov.projectbehance;
 
 import android.app.Application;
-import androidx.room.Room;
-import ru.osipov.projectbehance.data.Storage;
-import ru.osipov.projectbehance.data.database.BehanceDatabase;
+import ru.osipov.projectbehance.di.AppComponent;
+import ru.osipov.projectbehance.di.AppModule;
+import ru.osipov.projectbehance.di.DaggerAppComponent;
+import ru.osipov.projectbehance.di.NetworkModule;
 
 public class AppDelegate extends Application {
 
-    private Storage mStorage;
+    private static AppComponent sAppComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        final BehanceDatabase database = Room.databaseBuilder(this, BehanceDatabase.class, "behance_database")
-                .fallbackToDestructiveMigration()
+        sAppComponent = DaggerAppComponent.builder()
+                .appModule(new AppModule(this))
+                .networkModule(new NetworkModule())
                 .build();
-
-        mStorage = new Storage(database.getBehanceDao());
     }
 
-    public Storage getStorage() {
-        return mStorage;
+    public static AppComponent getAppComponent(){
+        return sAppComponent;
     }
 }

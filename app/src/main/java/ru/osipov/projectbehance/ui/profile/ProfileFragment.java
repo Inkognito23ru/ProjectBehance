@@ -9,13 +9,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-
+import javax.inject.Inject;
+import ru.osipov.projectbehance.AppDelegate;
 import ru.osipov.projectbehance.R;
 import ru.osipov.projectbehance.common.PresenterFragment;
 import ru.osipov.projectbehance.common.RefreshOwner;
 import ru.osipov.projectbehance.common.Refreshable;
-import ru.osipov.projectbehance.data.Storage;
 import ru.osipov.projectbehance.data.model.user.User;
 import ru.osipov.projectbehance.utils.DateUtils;
 
@@ -27,13 +26,13 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
     private View mErrorView;
     private View mContent;
     private String mUsername;
-    private Storage mStorage;
 
     private ImageView mProfileImage;
     private TextView mProfileName;
     private TextView mProfileCreatedOn;
     private TextView mProfileLocation;
-    private ProfilePresenter mProfilePresenter;
+    @Inject
+    ProfilePresenter mProfilePresenter;
 
     public static ProfileFragment newInstance(Bundle args) {
         ProfileFragment fragment = new ProfileFragment();
@@ -42,11 +41,9 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         return fragment;
     }
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mStorage = context instanceof Storage.StorageOwner ? ((Storage.StorageOwner) context).obtainStorage() : null;
         mRefreshOwner = context instanceof RefreshOwner ? (RefreshOwner) context : null;
     }
 
@@ -78,10 +75,9 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         if (getActivity() != null) {
             getActivity().setTitle(mUsername);
         }
-        mProfilePresenter = new ProfilePresenter(this, mStorage);
-
+        AppDelegate.getAppComponent().injectProfileFragment(this);
+        mProfilePresenter.setProfileView(this);
         mContent.setVisibility(View.VISIBLE);
-
         onRefreshData();
     }
 
@@ -99,7 +95,6 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
     public void showProfile(User user) {
         mErrorView.setVisibility(View.GONE);
         mContent.setVisibility(View.VISIBLE);
-
         mProfileName.setText(user.getDisplayName());
         mProfileCreatedOn.setText(DateUtils.format(user.getCreatedOn()));
         mProfileLocation.setText(user.getLocation());
@@ -121,10 +116,8 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         mContent.setVisibility(View.GONE);
     }
 
-
     @Override
     public void onDetach() {
-        mStorage = null;
         mRefreshOwner = null;
         super.onDetach();
     }

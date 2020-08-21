@@ -1,28 +1,33 @@
 package ru.osipov.projectbehance.ui.profile;
 
-import android.view.View;
 import android.widget.ImageView;
-
 import com.squareup.picasso.Picasso;
-
+import javax.inject.Inject;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import ru.osipov.projectbehance.common.BasePresenter;
 import ru.osipov.projectbehance.data.Storage;
+import ru.osipov.projectbehance.data.api.BehanceApi;
 import ru.osipov.projectbehance.utils.ApiUtils;
 
 public class ProfilePresenter extends BasePresenter {
 
     private ProfileView mProfileView;
-    private Storage mStorage;
+    @Inject
+    Storage mStorage;
+    @Inject
+    BehanceApi mApi;
 
-    public ProfilePresenter(ProfileView profileView, Storage storage) {
+    @Inject
+    public ProfilePresenter() {
+    }
+
+    public void setProfileView(ProfileView profileView) {
         mProfileView = profileView;
-        mStorage = storage;
     }
 
     public void getProfile(String userName, ImageView mProfileImage){
-        mCompositeDisposable.add(ApiUtils.getApiService().getUserInfo(userName)
+        mCompositeDisposable.add(mApi.getUserInfo(userName)
                 .subscribeOn(Schedulers.io())
                 .doOnSuccess(response -> mStorage.insertUser(response))
                 .onErrorReturn(throwable ->

@@ -1,7 +1,6 @@
 package ru.osipov.projectbehance.data;
 
 import android.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import ru.osipov.projectbehance.data.database.BehanceDao;
@@ -57,7 +56,6 @@ public class Storage {
             project.setCover(mBehanceDao.getCoverFromProject(project.getId()));
             project.setOwners(mBehanceDao.getOwnersFromProject(project.getId()));
         }
-
         ProjectResponse response = new ProjectResponse();
         response.setProjects(projects);
 
@@ -84,9 +82,4 @@ public class Storage {
 
         return response;
     }
-
-    public interface StorageOwner {
-        Storage obtainStorage();
-    }
-
 }
